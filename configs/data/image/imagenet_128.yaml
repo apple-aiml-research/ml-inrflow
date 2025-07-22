@@ -1,0 +1,18 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+_target_: datasets.imagenet.ImageNetDataModule
+path: ${paths.data_dir} # path to ImageNet dataset
+resolution: 128
+batch_size: 16 # This is the total batch size
+num_workers: 16
+signal_num_channels: 3
+coord_num_channels: 2
+num_classes: 1000
+val_set_config:
+    batch_size: 32
+    train: True
+    nsamples: 1024

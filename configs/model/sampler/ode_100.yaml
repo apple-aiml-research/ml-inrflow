@@ -1,0 +1,15 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+_target_: model.sampler.ODESampler
+num_timesteps: 100
+sample_step: "euler"
+diff_norm: 1.0
+diff_term: "SBDM"
+t_eps: 1e-4
+last_h: 0.01
+eval_ema: True
+cfg_scale: 1.0

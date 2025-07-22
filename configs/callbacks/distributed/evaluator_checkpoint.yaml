@@ -1,0 +1,20 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+# https://lightning.ai/docs/pytorch/stable/api/lightning.pytorch.callbacks.ModelCheckpoint.html
+
+_target_: lightning.pytorch.callbacks.ModelCheckpoint
+dirpath: artifacts # We need to modify this base on distributed or not
+filename: "model-best-iter{step:08d}"  # checkpoint filename
+monitor: "trainer/global_step" # name of the logged metric which determines when model is improving
+verbose: False # verbosity mode
+save_last: True # additionally always save an exact copy of the last checkpoint to a file last.ckpt
+save_top_k: 10 # save k best models (determined by above metric)
+mode: "max" # "max" means higher metric value is better, can be also "min"
+auto_insert_metric_name: False # when True, the checkpoints filenames will contain the metric name
+save_weights_only: False # if True, then only the model’s weights will be saved
+every_n_train_steps: ${trainer.val_check_interval} # number of training steps between checkpoints
+save_on_train_epoch_end: False # whether to run checkpointing at the end of the training epoch or the end of validation

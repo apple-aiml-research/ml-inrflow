@@ -1,0 +1,11 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+_target_: processor.default_processor.DefaultProcessor
+_partial_: True
+npoints_context: [16384] # needs to be a list 
+npoints_query: [16384] # needs to be a list
+sampling: 'uniform'

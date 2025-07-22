@@ -1,0 +1,79 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+global_params: # these are here for easy modification of the yaml file
+  num_heads: 16
+  mlp_ratio: 4.0
+  qkv_bias: True
+  qk_norm: True
+  patch_size: 8
+
+_target_: model.nets.architectures.PixelDiT
+hidden_size: 1152
+depth: 28
+num_dec_levels: 1
+coord_num_channels: 2
+signal_num_channels: 3
+num_classes: 1000
+label_embedder:
+  _target_: model.nets.layers.LabelEmbedder
+  num_classes: 1000
+  hidden_size: 1152
+  dropout_prob: 0.1
+time_embedder:
+  _target_: model.nets.layers.TimestepEmbedder
+  hidden_size: 1152
+  frequency_embedding_size: 256
+pos_embedder:
+  _target_: model.pos_embed.AbsoluteEmbedding
+  in_dim: 2
+  embed_dim: 1152
+  resolution: 256
+  include_input: False
+encoder:
+  _target_: model.nets.encoders.PatchCAEncoder
+  in_channels: 3
+  coord_num_channels: 2
+  out_channels: 1152
+  patch_size: 8
+  hidden_size: 1152
+  num_heads: 16
+  qkv_bias: True
+  img_size: 256
+trunk:
+  _target_: model.nets.trunks.HomogenTrunk
+  depth: 28
+  pos_embedder:
+    _target_: model.pos_embed.AbsoluteEmbedding
+    in_dim: 2
+    embed_dim: 1152
+    resolution: 32
+    include_input: False
+  block: 
+    _target_: model.nets.blocks.DiTBlock
+    _partial_: True # because in the for loop we create a new module
+    hidden_size: 1152
+    mlp_ratio: 4
+    self_attention_layer:
+      _target_: model.nets.layers.EfficientSelfAttentionLayer
+      _partial_: True
+      hidden_size: 1152
+      num_heads: 16
+      qk_norm: True
+decoder:
+  _target_: model.nets.decoders.PerceiverDecoder
+  depth: 1
+  block: 
+    _target_: model.nets.blocks.PerceiverDecoderBlock
+    _partial_: True
+    mlp_ratio: 4
+    hidden_size: 1152
+    cross_attention_layer:
+      _target_: model.nets.layers.EfficientCrossAttentionLayer
+      _partial_: True
+      hidden_size: 1152
+      num_heads: 16
+      qk_norm: True

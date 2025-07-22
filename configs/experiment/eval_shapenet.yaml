@@ -1,0 +1,27 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+# @package _global_
+defaults:
+  - override /data: points/shapenet
+  - override /model: linear_flow
+  - override /model/architecture: pointdit_shapenet
+  - override /model/evaluator: pointcloud
+  - override /model/sampler: sde_1000
+  - override /model/processor: shapenet_2048
+  - override /callbacks: default
+  - override /trainer: default 
+  - override /logger: many_loggers
+
+# All parameters below will be merged with parameters from default configurations set above 
+# this allows you to overwrite only specified parameters
+seed: 12345
+ckpt_file: PATH_TO_CHECKPOINT_FILE
+
+data:
+  category: ['all']
+  val_set_config:
+    batch_size: 32

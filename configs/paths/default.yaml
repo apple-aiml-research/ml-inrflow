@@ -1,0 +1,28 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+# path to root directory
+# this requires PROJECT_ROOT environment variable to exist
+# you can replace it with "." if you want the root to be the current working directory
+root_dir: "./"
+
+tmp_dir: ${paths.root_dir}tmp/
+
+# path to data directory
+data_dir: ${paths.root_dir}data/
+
+# path to logging directory
+log_dir: ${paths.root_dir}logs/
+
+# artifacts directory
+output_dir: ${paths.root_dir}output/
+
+viz_dir: ${.output_dir}/viz/
+
+eval_dir: ${.output_dir}/eval/
+
+# path to working directory
+work_dir: ${hydra:runtime.cwd}

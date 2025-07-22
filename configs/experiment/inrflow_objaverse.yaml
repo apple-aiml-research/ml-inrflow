@@ -1,0 +1,38 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+# @package _global_
+defaults:
+  - override /data: point/objaverse
+  - override /model: linear_flow
+  - override /model/architecture: pointdit_objaverse
+  - override /model/evaluator: pointcloud
+  - override /model/sampler: sde_500
+  - override /model/processor: objaverse_16k
+  - override /callbacks: default
+  - override /trainer: default
+  - override /logger: tensorboard
+
+# All parameters below will be merged with parameters from default configurations set above 
+# this allows you to overwrite only specified parameters
+seed: 12345
+
+trainer:
+  max_steps: 1000000
+  val_check_interval: 10000 # this controls BOTH checkpoint steps and validation
+
+data:
+  batch_size: 16
+  val_set_config:
+    batch_size: 16
+    train: True
+    nsamples: 32
+
+model:
+  compile: True
+  clip_grad_norm_val: 2.0
+  sampler:
+    clip: True

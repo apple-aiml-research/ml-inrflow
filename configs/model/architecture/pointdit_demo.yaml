@@ -1,0 +1,92 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+global_params: # these are here for easy modification of the yaml file
+  num_heads: 4
+  mlp_ratio: 4.0
+  qkv_bias: True
+  qk_norm: True
+  num_self_attends: 1
+
+_target_: model.nets.architectures.PointDiT
+hidden_size: 512
+depth: 9
+num_dec_levels: 1
+coord_num_channels: 3
+signal_num_channels: 3
+time_embedder:
+  _target_: model.nets.layers.TimestepEmbedder
+  hidden_size: 512
+pos_embedder:
+  _target_: model.pos_embed.FastFourierEmbed
+  input_dims: 3
+  max_freq_log2: 9
+  num_freqs: 10
+  include_input: False  # since we concatenate input point cloud in dpf
+  log_sampling: True
+encoder:
+  _target_: model.nets.encoders.PerceiverEncoder
+  latents:
+    _target_: model.nets.layers.PerceiverEmbeddings
+    num_latents: 1024
+    d_latents: 512
+  block:
+    _target_: model.nets.blocks.PerceiverEncoderBlock
+    hidden_size: 512
+    mlp_ratio: 4.0
+    num_self_attends: 1
+    self_attention_layer:
+      _target_: model.nets.layers.EfficientSelfAttentionLayer
+      _partial_: True
+      hidden_size: 512
+      num_heads: 4
+      qk_norm: True
+    cross_attention_layer:
+      _target_: model.nets.layers.EfficientCrossAttentionLayer
+      _partial_: True
+      hidden_size: 512
+      num_heads: 4
+      qk_norm: True
+trunk:
+  _target_: model.nets.trunks.HomogenTrunk
+  depth: 9
+  num_dec_levels: 1
+  block: 
+    _target_: model.nets.blocks.PerceiverEncoderBlock
+    _partial_: True
+    hidden_size: 512
+    mlp_ratio: 4.0
+    num_self_attends: True
+    self_attention_layer:
+      _target_: model.nets.layers.EfficientSelfAttentionLayer
+      _partial_: True
+      hidden_size: 512
+      num_heads: 4
+      qk_norm: True
+    cross_attention_layer:
+      _target_: model.nets.layers.EfficientCrossAttentionLayer
+      _partial_: True
+      hidden_size: 512
+      num_heads: 4
+      qk_norm: True
+decoder:
+  _target_: model.nets.decoders.PerceiverDecoder
+  depth: 1
+  block: 
+    _target_: model.nets.blocks.PerceiverDecoderBlock
+    _partial_: True
+    mlp_ratio: 4.0
+    hidden_size: 512
+    cross_attention_layer:
+      _target_: model.nets.layers.EfficientCrossAttentionLayer
+      _partial_: True
+      hidden_size: 512
+      num_heads: 4
+      qk_norm: True
+
+
+
+

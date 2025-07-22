@@ -1,0 +1,20 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+_target_: evaluator.image_evaluator.ImageEvaluatorPipeline
+_partial_: True
+
+# These paths are overriden if using distributed training
+eval_dir: ${paths.eval_dir}
+viz_dir: ${paths.viz_dir}
+metrics: 
+  fid: 
+    _target_: torchmetrics.image.fid.FrechetInceptionDistance
+  is:
+    _target_: torchmetrics.image.inception.InceptionScore
+    feature: 2048
+  fid_clip:
+    _target_: utils.fidclip.FrechetInceptionDistanceCLIP

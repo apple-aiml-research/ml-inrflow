@@ -1,0 +1,36 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+_target_: lightning.pytorch.trainer.Trainer
+
+default_root_dir: ${paths.output_dir}
+
+# set True to to ensure deterministic results
+# makes training slower but gives more reproducibility than just setting seeds
+deterministic: False
+
+accelerator: gpu
+devices: auto
+strategy: 
+  _target_: lightning.pytorch.strategies.FSDPStrategy
+  # auto_wrap_policy: a set of the layer classes to wrap.
+  # activation_checkpointing_policy:  a set of the layer classes to wrap.
+  mixed_precision:
+    _partial_: True
+    _target_: torch.distributed.fsdp.MixedPrecision
+    param_dtype: bfloat16
+    reduce_dtype: bfloat16
+    buffer_dtype: float32
+    cast_forward_inputs: True
+  use_orig_params: True
+  state_dict_type: sharded
+num_nodes: 1
+min_epochs: 1 # prevents early stopping
+max_steps: 100000
+precision: bf16-mixed
+val_check_interval: 5000
+check_val_every_n_epoch: null
+num_sanity_val_steps: 0

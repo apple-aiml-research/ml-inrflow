@@ -1,0 +1,92 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+global_params: # these are here for easy modification of the yaml file
+  num_heads: 4
+  mlp_ratio: 4.0
+  qkv_bias: True
+  qk_norm: True
+  num_self_attends: 1
+
+_target_: model.nets.architectures.PointDiT
+hidden_size: 512
+depth: 9
+num_dec_levels: 1
+coord_num_channels: ${data.coord_num_channels}
+signal_num_channels: ${data.signal_num_channels}
+time_embedder:
+  _target_: model.nets.layers.TimestepEmbedder
+  hidden_size: ${model.architecture.hidden_size}
+pos_embedder:
+  _target_: model.pos_embed.FastFourierEmbed
+  input_dims: ${data.coord_num_channels}
+  max_freq_log2: 9
+  num_freqs: 10
+  include_input: False  # since we concatenate input point cloud in dpf
+  log_sampling: True
+encoder:
+  _target_: model.nets.encoders.PerceiverEncoder
+  latents:
+    _target_: model.nets.layers.PerceiverEmbeddings
+    num_latents: 1024
+    d_latents: ${model.architecture.hidden_size}
+  block:
+    _target_: model.nets.blocks.PerceiverEncoderBlock
+    hidden_size: ${model.architecture.hidden_size}
+    mlp_ratio: ${model.architecture.global_params.mlp_ratio}
+    num_self_attends: ${model.architecture.global_params.num_self_attends}
+    self_attention_layer:
+      _target_: model.nets.layers.EfficientSelfAttentionLayer
+      _partial_: True
+      hidden_size: ${model.architecture.hidden_size}
+      num_heads: ${model.architecture.global_params.num_heads}
+      qk_norm: ${model.architecture.global_params.qk_norm}
+    cross_attention_layer:
+      _target_: model.nets.layers.EfficientCrossAttentionLayer
+      _partial_: True
+      hidden_size: ${model.architecture.hidden_size}
+      num_heads: ${model.architecture.global_params.num_heads}
+      qk_norm: ${model.architecture.global_params.qk_norm}
+trunk:
+  _target_: model.nets.trunks.HomogenTrunk
+  depth: ${model.architecture.depth}
+  num_dec_levels: ${model.architecture.num_dec_levels}
+  block: 
+    _target_: model.nets.blocks.PerceiverEncoderBlock
+    _partial_: True
+    hidden_size: ${model.architecture.hidden_size}
+    mlp_ratio: ${model.architecture.global_params.mlp_ratio}
+    num_self_attends: ${model.architecture.global_params.qk_norm}
+    self_attention_layer:
+      _target_: model.nets.layers.EfficientSelfAttentionLayer
+      _partial_: True
+      hidden_size: ${model.architecture.hidden_size}
+      num_heads: ${model.architecture.global_params.num_heads}
+      qk_norm: ${model.architecture.global_params.qk_norm}
+    cross_attention_layer:
+      _target_: model.nets.layers.EfficientCrossAttentionLayer
+      _partial_: True
+      hidden_size: ${model.architecture.hidden_size}
+      num_heads: ${model.architecture.global_params.num_heads}
+      qk_norm: ${model.architecture.global_params.qk_norm}
+decoder:
+  _target_: model.nets.decoders.PerceiverDecoder
+  depth: 1
+  block: 
+    _target_: model.nets.blocks.PerceiverDecoderBlock
+    _partial_: True
+    mlp_ratio: ${model.architecture.global_params.mlp_ratio}
+    hidden_size: ${model.architecture.hidden_size}
+    cross_attention_layer:
+      _target_: model.nets.layers.EfficientCrossAttentionLayer
+      _partial_: True
+      hidden_size: ${model.architecture.hidden_size}
+      num_heads: ${model.architecture.global_params.num_heads}
+      qk_norm: ${model.architecture.global_params.qk_norm}
+
+
+
+

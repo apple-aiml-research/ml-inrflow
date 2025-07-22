@@ -1,0 +1,75 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+
+global_params: # these are here for easy modification of the yaml file
+  num_heads: 16
+  mlp_ratio: 4.0
+  qkv_bias: True
+  qk_norm: True
+  patch_size: 8
+
+_target_: model.nets.architectures.PixelDiT
+hidden_size: 1024
+depth: 24
+num_dec_levels: 1
+coord_num_channels: ${data.coord_num_channels}
+signal_num_channels: ${data.signal_num_channels}
+num_classes: ${data.num_classes}
+time_embedder:
+  _target_: model.nets.layers.TimestepEmbedder
+  hidden_size: ${model.architecture.hidden_size}
+  frequency_embedding_size: 256
+pos_embedder:
+  _target_: model.pos_embed.AbsoluteEmbedding
+  in_dim: ${data.coord_num_channels}
+  embed_dim: ${model.architecture.hidden_size}
+  resolution: 32
+  include_input: False
+encoder:
+  _target_: model.nets.encoders.PatchCAEncoder
+  in_channels: ${data.signal_num_channels}
+  coord_num_channels: ${data.coord_num_channels}
+  out_channels: ${model.architecture.hidden_size}
+  patch_size: ${model.architecture.global_params.patch_size}
+  hidden_size: ${model.architecture.hidden_size}
+  num_heads: ${model.architecture.global_params.num_heads}
+  qkv_bias: ${model.architecture.global_params.qkv_bias}
+  img_size: ${data.resolution}
+trunk:
+  _target_: model.nets.trunks.HomogenTrunk
+  depth: ${model.architecture.depth}
+  num_dec_levels: ${model.architecture.num_dec_levels}
+  pos_embedder:
+    _target_: model.pos_embed.AbsoluteEmbedding
+    in_dim: ${data.coord_num_channels}
+    embed_dim: ${model.architecture.hidden_size}
+    resolution: 32
+    include_input: False
+  block: 
+    _target_: model.nets.blocks.DiTBlock
+    _partial_: True # because in the for loop we create a new module
+    hidden_size: ${model.architecture.hidden_size}
+    mlp_ratio: ${model.architecture.global_params.mlp_ratio}
+    self_attention_layer:
+      _target_: model.nets.layers.EfficientSelfAttentionLayer
+      _partial_: True
+      hidden_size: ${model.architecture.hidden_size}
+      num_heads: ${model.architecture.global_params.num_heads}
+      qk_norm: ${model.architecture.global_params.qk_norm}
+decoder:
+  _target_: model.nets.decoders.PerceiverDecoder
+  depth: 1
+  block: 
+    _target_: model.nets.blocks.PerceiverDecoderBlock
+    _partial_: True
+    mlp_ratio: ${model.architecture.global_params.mlp_ratio}
+    hidden_size: ${model.architecture.hidden_size}
+    cross_attention_layer:
+      _target_: model.nets.layers.EfficientCrossAttentionLayer
+      _partial_: True
+      hidden_size: ${model.architecture.hidden_size}
+      num_heads: ${model.architecture.global_params.num_heads}
+      qk_norm: ${model.architecture.global_params.qk_norm}
